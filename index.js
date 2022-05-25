@@ -42,6 +42,7 @@ async function run() {
       .collection('products');
     const orderCollection = client.db('car-manufacturing').collection('orders');
     const userCollection = client.db('car-manufacturing').collection('users');
+    const reviewCollection = client.db('car-manufacturing').collection('reviews');
 
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email;
@@ -110,6 +111,16 @@ async function run() {
       const result = await orderCollection.deleteOne(query);
       res.json(result);
     });
+
+    //(POST) Post A Review
+    app.post('/review', async (req, res) => {
+      reviewDetails = req.body;
+      const result = await reviewCollection.insertOne(reviewDetails);
+      res.json(result);
+    });
+
+    //(GET) Show All Review
+    
   } finally {
   }
 }
