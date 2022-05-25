@@ -22,6 +22,7 @@ async function run(){
         await client.connect();
         // console.log('connected with mongodb')
         const serviceCollection = client.db('car-manufacturing').collection('products');
+        const orderCollection = client.db('car-manufacturing').collection('orders');
 
         app.get('/products', async(req, res) =>{
             const query = {};
@@ -36,6 +37,14 @@ async function run(){
           const query = {_id: ObjectId(id)};
           const result = await serviceCollection.findOne(query)
 
+          res.send(result)
+        })
+
+        app.post('/order',async(req,res)=>{
+          const order = req.body;
+          console.log(order);
+
+          const result = await orderCollection.insertOne(order);
           res.send(result)
         })
 
