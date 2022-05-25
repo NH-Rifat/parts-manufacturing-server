@@ -103,7 +103,13 @@ async function run() {
     });
 
     //(DELETE) DELETE Order
-    
+    app.delete('/deleteOrder/:id', async (req, res) => {
+      const productId = req.params.id;
+      // console.log(productId);
+      const query = { _id: ObjectId(productId) };
+      const result = await orderCollection.deleteOne(query);
+      res.json(result);
+    });
   } finally {
   }
 }
