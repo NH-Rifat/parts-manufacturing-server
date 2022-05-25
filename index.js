@@ -42,7 +42,9 @@ async function run() {
       .collection('products');
     const orderCollection = client.db('car-manufacturing').collection('orders');
     const userCollection = client.db('car-manufacturing').collection('users');
-    const reviewCollection = client.db('car-manufacturing').collection('reviews');
+    const reviewCollection = client
+      .db('car-manufacturing')
+      .collection('reviews');
 
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email;
@@ -120,7 +122,27 @@ async function run() {
     });
 
     //(GET) Show All Review
-    
+    app.get('/review', async (req, res) => {
+      const cursor = reviewCollection.find();
+      const result = await cursor.toArray();
+      res.json(result);
+    });
+
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: user,
+      };
+      const updatedUser = await userCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(updatedUser);
+    });
   } finally {
   }
 }
