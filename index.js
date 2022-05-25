@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -21,9 +21,9 @@ async function run(){
     try{
         await client.connect();
         // console.log('connected with mongodb')
-        const serviceCollection = client.db('doctors_portal').collection('services');
+        const serviceCollection = client.db('car-manufacturing').collection('products');
 
-        app.get('/service', async(req, res) =>{
+        app.get('/products', async(req, res) =>{
             const query = {};
             const cursor = serviceCollection.find(query);
             const services = await cursor.toArray();
