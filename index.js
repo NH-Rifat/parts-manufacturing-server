@@ -46,22 +46,7 @@ async function run() {
       .db('car-manufacturing')
       .collection('reviews');
 
-    app.put('/user/:email', async (req, res) => {
-      const email = req.params.email;
-      const user = req.body;
-      const filter = { email: email };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: user,
-      };
-      const result = await userCollection.updateOne(filter, updateDoc, options);
-      const token = jwt.sign(
-        { email: email },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '1h' }
-      );
-      res.send({ result, accessToken: token });
-    });
+
 
     app.get('/products', async (req, res) => {
       const query = {};
@@ -81,7 +66,7 @@ async function run() {
 
     app.post('/order', async (req, res) => {
       const order = req.body;
-      console.log(order);
+      // console.log(order);
 
       const result = await orderCollection.insertOne(order);
       res.send(result);
@@ -98,7 +83,7 @@ async function run() {
         const query = { userEmail: email };
         const cursor = await orderCollection.find(query);
         const result = await cursor.toArray();
-        console.log(result);
+        // console.log(result);
         return res.json(result);
       } else {
         return res.status(403).send({ message: 'Not allow to access' });
@@ -128,20 +113,40 @@ async function run() {
       res.json(result);
     });
 
-    app.put('/user/:email', async (req, res) => {
+    app.put('/userProfile/:email', async (req, res) => {
+      console.log('profile update');
       const email = req.params.email;
+      console.log(email);
       const user = req.body;
+      console.log(user);
       const filter = { email: email };
-      const options = { upsert: true };
+      // const options = { upsert: true };
       const updatedDoc = {
         $set: user,
       };
       const updatedUser = await userCollection.updateOne(
         filter,
         updatedDoc,
-        options
+        // options
       );
       res.send(updatedUser);
+    });
+
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '1h' }
+      );
+      res.send({ result, accessToken: token });
     });
   } finally {
   }
