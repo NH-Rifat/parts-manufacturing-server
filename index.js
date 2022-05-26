@@ -156,6 +156,14 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
+    // get all user
+    app.get("/user",verifyJWT, async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.json(result);
+    });
+
   } finally {
   }
 }
