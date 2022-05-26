@@ -192,6 +192,20 @@ async function run() {
       const result = await serviceCollection.find().toArray();
       res.send(result);
     });
+
+    app.delete("/deleteService/:id",verifyJWT,verifyAdmin, async (req, res) => {
+      const productId = req.params.id;
+      const query = { _id: ObjectId(productId) };
+      const result = await serviceCollection.deleteOne(query);
+      res.json(result);
+    });
+
+    app.get('/manageAllOrders',verifyJWT,verifyAdmin,async(req,res)=>{
+      const result = await orderCollection.find().toArray();
+      res.send(result);
+    })
+
+    
   } finally {
   }
 }
