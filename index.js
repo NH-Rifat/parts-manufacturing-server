@@ -33,17 +33,6 @@ function verifyJWT(req, res, next) {
   });
 }
 
-const verifyAdmin = async (req, res, next) => {
-  const requester = req.decoded.email;
-  // console.log(requester);
-  const requestAccount = await userCollection.findOne({ email: requester });
-  if (requestAccount.role === 'admin') {
-    next();
-  } else {
-    return res.status(403).send({ message: 'Forbiden Access' });
-  }
-};
-
 async function run() {
   try {
     await client.connect();
@@ -56,6 +45,17 @@ async function run() {
     const reviewCollection = client
       .db('car-manufacturing')
       .collection('reviews');
+
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      // console.log(requester);
+      const requestAccount = await userCollection.findOne({ email: requester });
+      if (requestAccount.role === 'admin') {
+        next();
+      } else {
+        return res.status(403).send({ message: 'Forbiden Access' });
+      }
+    };
 
     app.get('/products', async (req, res) => {
       const query = {};
@@ -169,10 +169,28 @@ async function run() {
     });
 
     // get all user
-    app.get('/user', verifyJWT, verifyAdmin,async (req, res) => {
+    app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
       const cursor = userCollection.find();
       const result = await cursor.toArray();
       res.json(result);
+    });
+
+    app.get('/useadmin/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isAdmin = user.role === 'admin';
+      res.send({ admin: isAdmin });
+    });
+
+    app.post('/addservice', verifyJWT, verifyAdmin, async (req, res) => {
+      const product = req.body;
+      const result = await serviceCollection.insertOne(product);
+      res.send(result);
+    });
+
+    app.get('/manageservice', verifyJWT, verifyAdmin, async (req, res) => {
+      const result = await serviceCollection.find().toArray();
+      res.send(result);
     });
   } finally {
   }
