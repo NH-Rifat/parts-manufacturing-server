@@ -1,9 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// console.log(process.env.STRIPE_SECRET_KEY)
+
+// const Stripe = require('stripe');
+// const stripe = Stripe('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -43,6 +48,9 @@ async function run() {
       .collection('products');
     const orderCollection = client.db('car-manufacturing').collection('orders');
     const userCollection = client.db('car-manufacturing').collection('users');
+    const paymentCollection = client
+      .db('car-manufacturing')
+      .collection('payment');
     const reviewCollection = client
       .db('car-manufacturing')
       .collection('reviews');
@@ -234,25 +242,48 @@ async function run() {
       res.send(result);
     });
 
-    // app.get('/order/:id', verifyJWT, async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: ObjectId(id) };
-    //   const result = await orderCollection.findOne(query);
-    //   res.send(result);
-    // });
+    app.get('/order/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await orderCollection.findOne(query);
+      res.send(result);
+    });
 
-    // (POST) Post For Payment
-    // app.post('/create-payment-intent', verifyJWT, async (req, res) => {
-    //   const order = req.body;
-    //   const price = order.price;
-    //   const ammount = price * 100;
-    //   const paymentIntent = await stripe.paymentIntents.create({
-    //     amount: ammount,
-    //     currency: 'usd',
-    //     payment_method_types: ['card'],
-    //   });
-    //   res.send({ clientSecret: paymentIntent.client_secret });
-    // });
+    app.post('/create-payment-intent', async (req, res) => {
+      const service = req.body;
+      const price = service.price;
+
+      const amount = price * 100;
+
+      // console.log(amount);
+      if (amount) {
+        const paymentIntent = await stripe.paymentIntents.create({
+          // Authorization:`Bearer ${process.env.STRIPE_SECRET_KEY}`,
+          amount: amount,
+          currency: 'usd',
+          payment_method_types: ['card'],
+        });
+        res.send({ clientSecret: paymentIntent.client_secret });
+      }
+    });
+
+    app.patch('/order/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const payment = req.body;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        },
+      };
+      const result = await paymentCollection.insertOne(payment);
+      const updatedBooking = await orderCollection.updateOne(
+        filter,
+        updatedDoc
+      );
+      res.send(updatedBooking);
+    });
   } finally {
   }
 }
