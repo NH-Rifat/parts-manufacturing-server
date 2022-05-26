@@ -46,8 +46,6 @@ async function run() {
       .db('car-manufacturing')
       .collection('reviews');
 
-
-
     app.get('/products', async (req, res) => {
       const query = {};
       const cursor = serviceCollection.find(query);
@@ -114,11 +112,11 @@ async function run() {
     });
 
     app.put('/userProfile/:email', async (req, res) => {
-      console.log('profile update');
+      // console.log('profile update');
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       const filter = { email: email };
       // const options = { upsert: true };
       const updatedDoc = {
@@ -126,7 +124,7 @@ async function run() {
       };
       const updatedUser = await userCollection.updateOne(
         filter,
-        updatedDoc,
+        updatedDoc
         // options
       );
       res.send(updatedUser);
@@ -147,6 +145,16 @@ async function run() {
         { expiresIn: '1h' }
       );
       res.send({ result, accessToken: token });
+    });
+
+    app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: { role: 'admin' },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
   } finally {
   }
