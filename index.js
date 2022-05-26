@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
@@ -193,19 +194,65 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/deleteService/:id",verifyJWT,verifyAdmin, async (req, res) => {
-      const productId = req.params.id;
-      const query = { _id: ObjectId(productId) };
-      const result = await serviceCollection.deleteOne(query);
-      res.json(result);
-    });
+    app.delete(
+      '/deleteService/:id',
+      verifyJWT,
+      verifyAdmin,
+      async (req, res) => {
+        const productId = req.params.id;
+        const query = { _id: ObjectId(productId) };
+        const result = await serviceCollection.deleteOne(query);
+        res.json(result);
+      }
+    );
 
-    app.get('/manageAllOrders',verifyJWT,verifyAdmin,async(req,res)=>{
+    app.get('/manageAllOrders', verifyJWT, verifyAdmin, async (req, res) => {
       const result = await orderCollection.find().toArray();
       res.send(result);
-    })
+    });
 
-    
+    app.put('/manageOrders/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const updateStatus = req.body.status;
+      // console.log(updateStatus);
+      const query = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: updateStatus,
+        },
+      };
+      // console.log(updateDoc);
+      const result = await orderCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.delete('/manageOrders/:id', async (req, res) => {
+      const productId = req.params.id;
+      // console.log(productId);
+      const query = { _id: ObjectId(productId) };
+      const result = await orderCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // app.get('/order/:id', verifyJWT, async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: ObjectId(id) };
+    //   const result = await orderCollection.findOne(query);
+    //   res.send(result);
+    // });
+
+    // (POST) Post For Payment
+    // app.post('/create-payment-intent', verifyJWT, async (req, res) => {
+    //   const order = req.body;
+    //   const price = order.price;
+    //   const ammount = price * 100;
+    //   const paymentIntent = await stripe.paymentIntents.create({
+    //     amount: ammount,
+    //     currency: 'usd',
+    //     payment_method_types: ['card'],
+    //   });
+    //   res.send({ clientSecret: paymentIntent.client_secret });
+    // });
   } finally {
   }
 }
