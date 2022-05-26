@@ -33,6 +33,17 @@ function verifyJWT(req, res, next) {
   });
 }
 
+const verifyAdmin = async (req, res, next) => {
+  const requester = req.decoded.email;
+  // console.log(requester);
+  const requestAccount = await userCollection.findOne({ email: requester });
+  if (requestAccount.role === 'admin') {
+    next();
+  } else {
+    return res.status(403).send({ message: 'Forbiden Access' });
+  }
+};
+
 async function run() {
   try {
     await client.connect();
@@ -158,12 +169,11 @@ async function run() {
     });
 
     // get all user
-    app.get("/user",verifyJWT, async (req, res) => {
+    app.get('/user', verifyJWT, verifyAdmin,async (req, res) => {
       const cursor = userCollection.find();
       const result = await cursor.toArray();
       res.json(result);
     });
-
   } finally {
   }
 }
