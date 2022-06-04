@@ -5,11 +5,6 @@ require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// console.log(process.env.STRIPE_SECRET_KEY)
-
-// const Stripe = require('stripe');
-// const stripe = Stripe('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
-
 const app = express();
 const port = process.env.PORT || 5000;
 
